@@ -3,6 +3,18 @@
 # Importing TensorFlow
 import tensorflow as tf
 
+# Defining a custom callback class
+class myCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs={}):
+        if(logs.get('accuracy') > .95):
+            print("\nReached 95% accuracy so ending training")
+            self.model.stop_training = True
+# This callback class is used during model training. 
+# It checks the accuracy at the end of each epoch and stops training once it exceeds 95%.
+
+# Creating an instance of the custom callback class
+callbacks = myCallback()
+
 # Loading the Fashion MNIST dataset from TensorFlow's datasets
 data = tf.keras.datasets.fashion_mnist
 
@@ -30,7 +42,11 @@ model.compile(optimizer='adam',
 # Compiling the model with 'adam' optimizer, 'sparse_categorical_crossentropy' loss function, and tracking 'accuracy' metric.
 
 # Training the model
-model.fit(training_images, training_labels, epochs=50)
+model.fit(training_images, training_labels, epochs= 50, callbacks =[callbacks])
 # Training the model on the training images and labels for 50 epochs.
 
+model.evaluate(test_images,test_labels)
 
+# classifications = model.predict(test_images)
+# print(classifications[0][9])
+# print(test_labels[0])
