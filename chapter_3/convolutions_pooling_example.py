@@ -39,7 +39,7 @@ model.compile(optimizer='adam',
 # Compiling the model with the 'adam' optimizer and 'sparse_categorical_crossentropy' as the loss function.
 
 # Training the CNN model
-model.fit(training_images, training_labels, epochs=50)
+model.fit(training_images, training_labels, epochs=5)
 # Training the model on the training images and labels for 50 epochs.
 
 # Evaluating the CNN model
@@ -48,3 +48,5 @@ model.evaluate(test_images, test_labels)
 
 # This script sets up and trains a convolutional neural network using the Fashion MNIST dataset, 
 # which is useful for image classification tasks.
+
+model.summary()
