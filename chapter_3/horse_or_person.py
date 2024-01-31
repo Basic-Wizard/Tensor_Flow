@@ -1,15 +1,30 @@
 #!/usr/bin/env python
 
-import urllib.request
-import zipfile
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-url = "https://storage.googleapis.com/laurencemoroney-blog.appspot.com/horse-or-human.zip"
+training_dir = 'horse_or_human_data/training'
 
-file_name = "horse-or-human.zip"
-training_dir = 'horse-or-human/training/'
-urllib.request.urlretrieve(url, file_name)
+train_datagen = ImageDataGenerator(rescale=1/255)
 
-zip_ref = zipfile.ZipFile(file_name, 'r')
-zip_ref.extractall(training_dir)
-zip_ref.close()
+train_generator = train_datagen.flow_from_directory(
+    training_dir,
+    target_size=(300, 300),
+    class_mode='binary'
+)
 
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(16, (3,3), activation = 'relu', input_shape = (300, 300, 3)),
+    tf.keras.layers.MaxPooling2D (2,2),
+    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
+    tf.keras.layers.MaxPooling2D (2,2),
+    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
+    tf.keras.layers.MaxPooling2D (2,2),
+    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
+    tf.keras.layers.MaxPooling2D (2,2),
+    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
+    tf.keras.layers.MaxPooling2D (2,2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(512, activation = 'relu'),
+    tf.keras.layers.Dense(1, activation = 'sigmoid')
+])
