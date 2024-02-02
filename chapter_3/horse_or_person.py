@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.optimizers import RMSprop
 
 training_dir = 'horse_or_human_data/training'
 
@@ -28,3 +29,13 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(512, activation = 'relu'),
     tf.keras.layers.Dense(1, activation = 'sigmoid')
 ])
+
+model.compile(loss='binary_crossentropy',
+              optimizer=RMSprop(learning_rate=0.001),
+              metrics=['accuracy'])
+
+
+history = model.fit_generator(
+    train_generator,
+    epochs = 15
+)
