@@ -1,47 +1,68 @@
 #!/usr/bin/env python
 
+# TensorFlow is an open-source machine learning library. Keras, integrated within TensorFlow, simplifies many neural network building processes.
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import RMSprop
 
+# Paths to the directories where the training and testing images are stored.
+# These images are used to teach the neural network to differentiate between two classes: horses and humans.
 training_dir = 'horse_or_human_data/training'
 testing_dir = 'horse_or_human_data/testing'
 
+# ImageDataGenerator is a powerful tool that helps in image preprocessing.
+# It can augment your images in real-time while your model is still training, which adds variety to the training data without increasing the actual image count.
+# Here, we rescale images by dividing pixel values by 255 (since RGB values range from 0 to 255),
+# transforming them to a range of 0 to 1, which helps with neural network performance.
 train_datagen = ImageDataGenerator(rescale = 1/255)
+
+# This generator reads images from the specified directory, resizes the images to 300x300 pixels to match the input shape that the neural network expects,
+# and uses 'binary' class mode for binary classification (horse or human).
 train_generator = train_datagen.flow_from_directory(
     training_dir,
     target_size=(300, 300),
     class_mode='binary'
 )
 
+# Similarly, we create another ImageDataGenerator for validation data. Validation data is used to evaluate the performance of the model on new, unseen data.
+# This helps in tuning the model and avoiding overfitting, which occurs when a model learns the training data too well, including its noise and outliers, resulting in poor performance on new data.
 validation_datagen = ImageDataGenerator(rescale = 1/255)
+
+# IMPORTANT: There's a mistake here. The validation generator should ideally point to a separate directory containing validation data.
+# For learning purposes, this code reuses the training data for validation, which is not a best practice.
 validation_generator = train_datagen.flow_from_directory(
-    training_dir,
+    training_dir,  # Ideally, this should be a path to validation data.
     target_size=(300, 300),
     class_mode='binary'
 )
 
+# The Sequential model is a linear stack of layers. Here, we're building a CNN which is highly effective for image classification tasks.
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(16, (3,3), activation = 'relu', input_shape = (300, 300, 3)),
-    tf.keras.layers.MaxPooling2D (2,2),
-    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
-    tf.keras.layers.MaxPooling2D (2,2),
-    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
-    tf.keras.layers.MaxPooling2D (2,2),
-    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
-    tf.keras.layers.MaxPooling2D (2,2),
-    tf.keras.layers.Conv2D(64, (3,3), activation = 'relu'),
-    tf.keras.layers.MaxPooling2D (2,2),
+    # Conv2D is a layer that performs convolution. The first parameter is the number of filters, which are essentially feature detectors.
+    # (3,3) indicates the size of these filters. 'relu' activation function introduces non-linearity, allowing the network to learn complex patterns.
+    tf.keras.layers.Conv2D(16, (3,3), activation='relu', input_shape=(300, 300, 3)),
+    # MaxPooling2D is a way to reduce the spatial dimensions of the output volume, speeding up the computation and extracting dominant features while reducing overfitting.
+    tf.keras.layers.MaxPooling2D(2,2),
+    # Additional convolutional and max pooling layers increase the depth of the network, enabling it to learn more complex features.
+    tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2,2),
+    # Flatten layer converts the 2D matrix data to a vector so it can be fully connected to the dense layer next.
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation = 'relu'),
-    tf.keras.layers.Dense(1, activation = 'sigmoid')
+    # Dense layers are deeply connected neural network layers. 512 units are used here with 'relu' to allow learning more complex patterns.
+    tf.keras.layers.Dense(512, activation='relu'),
+    # The final layer is a dense layer with a sigmoid activation function that outputs a value between 0 and 1, representing the probability of the image being a horse or a human.
+    tf.keras.layers.Dense(1, activation='sigmoid')
 ])
 
+# Compiling the model with 'binary_crossentropy' loss function, suitable for binary classification problems.
+# RMSprop optimizer is used with a learning rate of 0.001. The model will use accuracy as a metric to evaluate performance during training and testing.
 model.compile(loss='binary_crossentropy',
               optimizer=RMSprop(learning_rate=0.001),
               metrics=['accuracy'])
 
-
+# Model training happens here. 'fit_generator' is used to fit the model on the data generated by 'train_generator'.
+# The model will train for 15 epochs, which means it will go through the entire dataset 15 times, adjusting the model weights to minimize the loss with each epoch.
+# Validation data is used to evaluate the model after each epoch, giving an idea of how well the model is generalizing to new data.
 history = model.fit_generator(
     train_generator,
     epochs = 15,
