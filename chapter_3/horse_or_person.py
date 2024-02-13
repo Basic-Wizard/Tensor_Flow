@@ -5,10 +5,17 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import RMSprop
 
 training_dir = 'horse_or_human_data/training'
+testing_dir = 'horse_or_human_data/testing'
 
-train_datagen = ImageDataGenerator(rescale=1/255)
-
+train_datagen = ImageDataGenerator(rescale = 1/255)
 train_generator = train_datagen.flow_from_directory(
+    training_dir,
+    target_size=(300, 300),
+    class_mode='binary'
+)
+
+validation_datagen = ImageDataGenerator(rescale = 1/255)
+validation_generator = train_datagen.flow_from_directory(
     training_dir,
     target_size=(300, 300),
     class_mode='binary'
@@ -37,5 +44,6 @@ model.compile(loss='binary_crossentropy',
 
 history = model.fit_generator(
     train_generator,
-    epochs = 15
+    epochs = 15,
+    validation_data = validation_generator
 )
